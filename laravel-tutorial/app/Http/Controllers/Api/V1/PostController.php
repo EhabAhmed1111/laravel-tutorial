@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\StorePostRequest;
 use App\Models\Post;
+use App\Http\Resources\PostResource;
 
 class PostController extends Controller
 {
@@ -14,8 +15,8 @@ class PostController extends Controller
      */
     public function index()
     {
-        $data = Post::all();
-        return response()->json($data, 200);
+      
+        return PostResource::collection(Post::with('author')->paginate());
     }
 
     /**
@@ -31,7 +32,7 @@ class PostController extends Controller
         $data['author_id'] = 1;
         $post = Post::create($data);
 
-        return response()->json($post,201);
+        return response()->json(new PostResource($post),201);
         //
     }
 
@@ -42,7 +43,10 @@ class PostController extends Controller
     {
         //this either return the post or give 404 status code
         // $data = Post::findOrFail($id);
-        return response()->json($post);
+        // if I remove response()->json() and return it normally 
+        // laravel will transform it to json automatically and will wrap it with data object and it some times really good to use
+        // and also set status code to the correct code
+        return response()->json(new PostResource($post));
     }
 
     /**
