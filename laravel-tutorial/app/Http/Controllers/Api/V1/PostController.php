@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Requests\StorePostRequest;
+use App\Models\Post;
 
 class PostController extends Controller
 {
@@ -12,65 +14,62 @@ class PostController extends Controller
      */
     public function index()
     {
-        return [
-            [
-                'id'=>1,
-            'title'=>'test',
-            'body'=>'post body'
-            ]
-        ];
+        $data = Post::all();
+        return response()->json($data, 200);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StorePostRequest $request)
     {
         // $data = $request->all();
         //this used to show some of the req not all 
         // but all request will be processed
-$data = $request->only('id', 'title');
-return response()->json([
-    'message'=>'test',
-    'data'=>[
-    'id'=>$data['id'],
-    'title'=>$data['title'],
-    'body'=>'post body'
-]],201);
+        // $data = $request->only('id', 'title');
+        $data = $request->validated();
+        $data['author_id'] = 1;
+        $post = Post::create($data);
+
+        return response()->json($post,201);
         //
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Post $post)
     {
-        return response()->json([
-            'data'=>[
-            'id'=>1,
-            'title'=>'test',
-            'body'=>'post body'
-        ]]);
+        //this either return the post or give 404 status code
+        // $data = Post::findOrFail($id);
+        return response()->json($post);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Post $post)
     {
         // the two way to validate req
+        // 200 code or unprocessable req 422
         $data = $request->validate([
             'title'=>'required|string|min:2',
             'body'=>['required', 'string', 'min:2']
         ]);
-        return $data;
+
+        $post->update($data);
+
+        return $post;
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Post $post)
     {
+        // this send 204 status code for no content
+        // $post = findOrFail($id);
+        $post->delete();
         return response()->noContent();
     }
 }
