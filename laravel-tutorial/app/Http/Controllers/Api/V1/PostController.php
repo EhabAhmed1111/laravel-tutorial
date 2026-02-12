@@ -15,8 +15,11 @@ class PostController extends Controller
      */
     public function index()
     {
-      
-        return PostResource::collection(Post::with('author')->paginate());
+        $user = request()->user();
+        $posts = $user->posts()->paginate();
+        // this will git all posts with its user
+        // return PostResource::collection(Post::with('author')->paginate());
+        return PostResource::collection($posts);
     }
 
     /**
@@ -29,7 +32,7 @@ class PostController extends Controller
         // but all request will be processed
         // $data = $request->only('id', 'title');
         $data = $request->validated();
-        $data['author_id'] = 1;
+        $data['author_id'] = $request->user()->id;
         $post = Post::create($data);
 
         return response()->json(new PostResource($post),201);
@@ -41,6 +44,9 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
+        $user = request()->user();
+        abort_if($user->id != $post->author_id, 403, "Access Forbiden");
+
         //this either return the post or give 404 status code
         // $data = Post::findOrFail($id);
         // if I remove response()->json() and return it normally 
@@ -54,6 +60,8 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
+        $user = request()->user();
+        abort_if($user->id != $post->author_id, 403, "Access Forbiden");
         // the two way to validate req
         // 200 code or unprocessable req 422
         $data = $request->validate([
@@ -71,6 +79,8 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        $user = request()->user();
+        abort_if($user->id != $post->author_id, 403, "Access Forbiden");
         // this send 204 status code for no content
         // $post = findOrFail($id);
         $post->delete();

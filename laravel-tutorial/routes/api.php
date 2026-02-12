@@ -4,18 +4,19 @@ use App\Http\Controllers\Api\V1\PostController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
+Route::middleware(['auth:sanctum'])->group(function() {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 
-Route::get('/hello', function() {
-    return [
-        'message'=>'Hello Laravel Api !',
-    ];
+    Route::prefix('v1')->group(function() {
+        Route::apiResource("posts", PostController::class);
+    });
 });
 
-Route::prefix('v1')->group(function() {
-    Route::apiResource('posts', PostController::class);
-});
 
+require __DIR__.'/auth.php';
