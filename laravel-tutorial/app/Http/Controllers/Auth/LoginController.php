@@ -21,6 +21,8 @@ class LoginController extends Controller
         // $request->session()->regenerate();
 
         //this will retturn the user
+        // facade
+        // Auth::user();
         $user = $request->user();
 
         $token = $user->createToken("main")->plainTextToken;
